@@ -8,4 +8,6 @@ class Diseases(BareBaseModel):
     name_E = Column(String, index=True)
     symbol = Column(String)
     description = Column(String)  
-   
+    reason = Column(String)
+    expression= Column(String)
+    advice=Column(String)

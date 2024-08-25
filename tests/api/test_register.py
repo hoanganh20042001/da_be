@@ -21,7 +21,7 @@ class TestRegister:
             'full_name': fake.name(),
             'email': fake.email(),
             'password': 'secret123',
-            'role': random.choice(list(UserRole)).value
+            'role_id': random.choice(list(UserRole)).value
         }
         print(f'[x] register_data: {register_data}')
         r = client.post(f"{settings.API_PREFIX}/register", json=register_data)

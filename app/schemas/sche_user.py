@@ -20,7 +20,7 @@ class UserItemResponse(UserBase):
     full_name: str
     email: EmailStr
     is_active: bool
-    role: str
+    role_id: str
     last_login: Optional[datetime]
     phone_number:Optional[str]
     rank: Optional[str]
@@ -35,26 +35,27 @@ class UserCreateRequest(UserBase):
     password: str
     email: EmailStr
     is_active: bool = True
-    role: UserRole = UserRole.STAFF
+    role_id: UserRole = UserRole.STAFF
     phone_number:str
     rank: str
     position: str
     unit_id :int
     date_birth: datetime
     sex: bool
+    deleted:bool=False
 
 class UserRegisterRequest(BaseModel):
     full_name: str
     email: EmailStr
     password: str
-    role: UserRole = UserRole.STAFF
+    role_id: UserRole = UserRole.STAFF
     phone_number:str
     rank: str
     position: str
     unit_id :int
     date_birth: datetime
     sex: bool
-
+    
 class UserUpdateMeRequest(BaseModel):
     full_name: Optional[str]
     email: Optional[EmailStr]
@@ -71,10 +72,11 @@ class UserUpdateRequest(BaseModel):
     email: Optional[EmailStr]
     password: Optional[str]
     is_active: Optional[bool] = True
-    role: Optional[UserRole]
+    role_id: Optional[UserRole]
     phone_number:Optional[str]
     rank: Optional[str]
     position: Optional[str]
     unit_id :Optional[int]
     date_birth: Optional[datetime]
     sex: Optional[bool] 
+    deleted: Optional[bool] 

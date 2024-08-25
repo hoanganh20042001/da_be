@@ -8,7 +8,7 @@ class User(BareBaseModel):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String(255))
     is_active = Column(Boolean, default=True)
-    role = Column(String, default='staff')  
+    role_id = Column(String, default='S')  
     last_login = Column(DateTime)
     date_birth = Column(DateTime)
     unit_id = Column(Integer)
@@ -16,3 +16,4 @@ class User(BareBaseModel):
     position = Column(String)
     phone_number = Column(String(10), index=True)
     sex=Column(Boolean, default=True)
+    deleted=Column(Boolean, default=False)

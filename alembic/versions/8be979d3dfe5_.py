@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-      op.create_table('units',
+    op.create_table('units',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),

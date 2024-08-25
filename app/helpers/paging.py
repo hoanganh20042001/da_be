@@ -18,7 +18,7 @@ logger = logging.getLogger()
 
 
 class PaginationParams(BaseModel):
-    page_size: Optional[conint(gt=0, lt=1001)] = 10
+    page_size: Optional[conint(gt=0, lt=1001)] = 9
     page: Optional[conint(gt=0)] = 1
     search_text: Optional[str] = ''
     sort_by: Optional[str] = 'id'
@@ -58,14 +58,6 @@ def paginate(model, query: Query, params: Optional[PaginationParams]) -> BasePag
     message = 'Success'
 
     try:
-        # if params.search_text:
-        #     search_filters = []
-        #     for column in model.__table__.columns:
-        #         if isinstance(column.type, sa.String):
-        #             search_filters.append(column.ilike(f"%{params.search_text}%"))
-        #     if search_filters:
-        #         query = query.filter(or_(*search_filters))
-
         total = query.count()
 
         if params.order:

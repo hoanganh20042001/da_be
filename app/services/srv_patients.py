@@ -12,7 +12,9 @@ from app.core.config import settings
 from app.core.security import verify_password, get_password_hash
 from app.schemas.sche_token import TokenPayload
 from app.schemas.sche_patients import PatientsCreateRequest,PatientsItemResponse,PatientsUpdateRequest
-
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class PatientsService(object):
     __instance = None
@@ -82,20 +84,6 @@ class PatientsService(object):
         db.session.commit()
         return new_patient
 
-    # @staticmethod
-    # def update_me(data: UserUpdateMeRequest, current_user: User):
-    #     if data.email is not None:
-    #         exist_user = db.session.query(User).filter(
-    #             User.email == data.email, User.id != current_user.id).first()
-    #         if exist_user:
-    #             raise Exception('Email already exists')
-    #     current_user.full_name = current_user.full_name if data.full_name is None else data.full_name
-    #     current_user.email = current_user.email if data.email is None else data.email
-    #     current_user.hashed_password = current_user.hashed_password if data.password is None else get_password_hash(
-    #         data.password)
-    #     db.session.commit()
-    #     return current_user
-
     @staticmethod
     def update(patient_id: int, data: PatientsUpdateRequest):
         patient = db.session.query(Patients).get(patient_id)
@@ -117,7 +105,26 @@ class PatientsService(object):
 
     @staticmethod
     def get(patient_id):
+        logger.info(2)
         exist_patient = db.session.query(Patients).get(patient_id)
+        if exist_patient is None:
+            raise Exception('patient not exists')
+        return exist_patient
+
+    @staticmethod
+    def delete(patient_id: int):
+        patient = db.session.query(Patients).get(patient_id)
+        if patient is None:
+            raise Exception('patient not exists')
+        patient.deleted = 1 
+       
+        db.session.commit()
+        return patient
+
+    @staticmethod
+    def getByCccd(cccd):
+        logger.info(1)
+        exist_patient = db.session.query(Patients).filter(Patients.identification == cccd).first()
         if exist_patient is None:
             raise Exception('patient not exists')
         return exist_patient

@@ -16,6 +16,7 @@ from app.models import Checks
 from app.models import Results
 from app.models import User
 from app.models import Patients
+from app.models import Diseases
 from sqlalchemy import desc
 from datetime import datetime
 # Khởi tạo FastAPI
@@ -78,12 +79,14 @@ class ResultService(object):
         logger.info(temp_file)
         # Tìm đường dẫn của ảnh đã nhận diện
         detected_image_path = None
-        for root, dirs, files in os.walk(RESULTS_DIR):
-            for file in files:
-                if file.endswith((".png", ".jpg", ".jpeg")):
-                    detected_image_path = os.path.join(root, file)
-                    break
-        
+        logger.info(os.path.basename(temp_file))
+        # for root, dirs, files in os.walk(RESULTS_DIR):
+        #     for file in files:
+        #         if file.endswith((".png", ".jpg", ".jpeg")):
+        #             last_image = sorted(file)[-1]
+        detected_image_path = os.path.join('files/detect/detect', os.path.basename(temp_file))
+        #             break
+        logger.info(detected_image_path)
         new_check = Checks(
            user_id=current_user.id,
            patient_id=patient.id,
@@ -117,13 +120,13 @@ class ResultService(object):
                 )
                 db.session.add(new_result)
                 db.session.commit()
-        return PredictionsResponse(predictions=predictions, detected_image_path=detected_image_path.replace("\\", "/"))
+        return PredictionsResponse(predictions=predictions, detected_image_path=str(detected_image_path.replace("/", "\\")), check_id= new_check.id)
             # else:
             #     return PredictionsResponse(predictions=[], detected_image_path=detected_image_path)
 
     @staticmethod
     def get(patient_id):
-        exist_patient = db.session.query(Patients).get(patient_id)
+        exist_patient = db.session.query(Patients, Diseases).join(Diseases, Patients.id == Diseases.patient_id).filter(Patients.id == patient_id).all()
         if exist_patient is None:
             raise Exception('patient not exists')
         return exist_disease

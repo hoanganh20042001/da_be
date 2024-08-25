@@ -18,3 +18,4 @@ class Patients(BareBaseModel):
     date_birth=Column(DateTime)
     unit_id = Column(Integer)
     rank = Column(String)
+    deleted=Column(Boolean, default=False)

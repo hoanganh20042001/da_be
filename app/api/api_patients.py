@@ -65,3 +65,27 @@ def update(patient_id: int, patients_data: PatientsUpdateRequest, patients_servi
         return DataResponse().success_response(data=updated_Patients)
     except Exception as e:
         raise CustomException(http_code=400, code='400', message=str(e))
+
+
+@router.delete("/{patient_id}", dependencies=[Depends(PermissionRequired('A'))],
+            response_model=DataResponse[PatientsItemResponse])
+def delete(patient_id: int, patient_service: PatientsService = Depends()) -> Any:
+    """
+    API update User
+    """
+    try:
+        delete_patient = patient_service.delete(id=patient_id)
+        return DataResponse().success_response(data=delete_patient)
+    except Exception as e:
+        raise CustomException(http_code=400, code='400', message=str(e))
+    
+@router.get("/get_by_cccd/{cccd}", dependencies=[Depends(login_required)], response_model=DataResponse[PatientsItemResponse])
+def getByCccd(cccd: str, patients_service: PatientsService = Depends()) -> Any:
+    """
+    API get Detail Patients
+    """
+    try:
+        logger.info(cccd)
+        return DataResponse().success_response(data=patients_service.getByCccd(cccd))
+    except Exception as e:
+        raise CustomException(http_code=400, code='400', message=str(e))

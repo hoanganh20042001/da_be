@@ -29,6 +29,7 @@ class PatientsItemResponse(PatientsBase):
     height:int
     weight:int
     date_birth: Optional[datetime]
+    deleted: bool
 
 
 class PatientsCreateRequest(PatientsBase):
@@ -44,6 +45,7 @@ class PatientsCreateRequest(PatientsBase):
     height:int
     weight:int
     date_birth: Optional[datetime]
+    deleted: bool=False
 
 
 class PatientsUpdateRequest(BaseModel):
@@ -59,3 +61,4 @@ class PatientsUpdateRequest(BaseModel):
     height:int
     weight:int
     date_birth: Optional[datetime]
+    deleted: bool=False

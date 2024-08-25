@@ -31,7 +31,7 @@ def get(params: PaginationParams = Depends()) -> Any:
         return HTTPException(status_code=400, detail=logger.error(e))
 
 
-@router.post("", dependencies=[Depends(PermissionRequired('admin'))], response_model=DataResponse[UserItemResponse])
+@router.post("", dependencies=[Depends(PermissionRequired('A'))], response_model=DataResponse[UserItemResponse])
 def create(user_data: UserCreateRequest, user_service: UserService = Depends()) -> Any:
     """
     API Create User
@@ -76,7 +76,7 @@ def detail(user_id: int, user_service: UserService = Depends()) -> Any:
         raise CustomException(http_code=400, code='400', message=str(e))
 
 
-@router.put("/{user_id}", dependencies=[Depends(PermissionRequired('admin'))],
+@router.put("/{user_id}", dependencies=[Depends(PermissionRequired('A'))],
             response_model=DataResponse[UserItemResponse])
 def update(user_id: int, user_data: UserUpdateRequest, user_service: UserService = Depends()) -> Any:
     """
@@ -85,5 +85,17 @@ def update(user_id: int, user_data: UserUpdateRequest, user_service: UserService
     try:
         updated_user = user_service.update(user_id=user_id, data=user_data)
         return DataResponse().success_response(data=updated_user)
+    except Exception as e:
+        raise CustomException(http_code=400, code='400', message=str(e))
+
+@router.delete("/{user_id}", dependencies=[Depends(PermissionRequired('A'))],
+            response_model=DataResponse[UserItemResponse])
+def delete(user_id: int, user_service: UserService = Depends()) -> Any:
+    """
+    API update User
+    """
+    try:
+        delete_user = user_service.delete(id=user_id)
+        return DataResponse().success_response(data=delete_user)
     except Exception as e:
         raise CustomException(http_code=400, code='400', message=str(e))

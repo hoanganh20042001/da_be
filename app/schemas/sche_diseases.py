@@ -19,13 +19,18 @@ class DiseasesItemResponse(DiseasesBase):
     name_E: str
     symbol:str
     description:str
+    reason:str
+    expression:str
+    advice: str
 
 class DiseasesCreateRequest(DiseasesBase):
     name: str
     name_E: str
     symbol:str
     description:str
-
+    reason:str
+    expression:str
+    advice: str
 
 
 class DiseasesUpdateRequest(BaseModel):
@@ -33,3 +38,6 @@ class DiseasesUpdateRequest(BaseModel):
     name_E: Optional[str]
     symbol:Optional[str]
     description:Optional[str]
+    reason:Optional[str]
+    expression:Optional[str]
+    advice: Optional[str]

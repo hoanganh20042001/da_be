@@ -7,7 +7,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str = 'bearer'
     full_name: str
-    role: str
+    role_id: str
 
 
 class TokenPayload(BaseModel):

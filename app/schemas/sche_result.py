@@ -10,3 +10,4 @@ class Prediction(BaseModel):
 class PredictionsResponse(BaseModel):
     predictions: List[Prediction]
     detected_image_path: str
+    check_id: int

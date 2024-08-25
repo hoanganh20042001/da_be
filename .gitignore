@@ -82,4 +82,4 @@ docker/
 */.DS_Store
 
 yolov9
-files/templates
+files

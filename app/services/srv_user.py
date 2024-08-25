@@ -89,7 +89,7 @@ class UserService(object):
             email=data.email,
             hashed_password=get_password_hash(data.password),
             is_active=data.is_active,
-            role=data.role.value,
+            role_id=data.role_id.value,
             date_birth=data.date_birth,
             unit_id=data.unit_id,
             phone_number=data.phone_number,
@@ -129,7 +129,7 @@ class UserService(object):
         user.hashed_password = user.hashed_password if data.password is None else get_password_hash(
             data.password)
         user.is_active = user.is_active if data.is_active is None else data.is_active
-        user.role = user.role if data.role is None else data.role.value
+        user.role_id = user.role_id if data.role_id is None else data.role_id.value
         user.date_birth = user.date_birth  if data.date_birth  is None else data.date_birth 
         user.sex = user.sex if data.sex is None else data.sex
         user.unit_id = user.unit_id if data.unit_id is None else data.unit_id
@@ -144,3 +144,13 @@ class UserService(object):
         if exist_user is None:
             raise Exception('User not exists')
         return exist_user
+
+    @staticmethod
+    def delete(user_id: int):
+        user = db.session.query(User).get(user_id)
+        if user is None:
+            raise Exception('User not exists')
+        user.deleted = 1 
+       
+        db.session.commit()
+        return user
