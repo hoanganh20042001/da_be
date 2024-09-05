@@ -10,7 +10,7 @@ from app.helpers.login_manager import login_required, PermissionRequired
 from app.helpers.paging import Page, PaginationParams, paginate,  MetadataSchema
 from app.models import Diseases, Checks, Results, Patients, Units, User
 from app.schemas.sche_base import DataResponse
-from app.schemas.sche_checks import Check
+from app.schemas.sche_checks import Check, CheckUpdateRequest
 logger = logging.getLogger()
 router = APIRouter()
 @router.get("", dependencies=[Depends(login_required)], response_model=Any)
@@ -110,3 +110,26 @@ def get(check_id: int) -> Any:
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=400, detail="An error occurred while processing your request")
+
+@router.put("/{check_id}",
+            # dependencies=[Depends(login_required)],
+            response_model=Any)
+def update(check_id: int, request: CheckUpdateRequest) -> Any:
+    """
+    API update Diseases
+    """
+    try:
+        check = db.session.query(Checks).filter(Checks.id == check_id).first()
+        if not check:
+            raise HTTPException(status_code=404, detail="Check not found")
+
+        # Cập nhật các trường
+        check.description = request.description
+        check.result = request.result
+
+        # Lưu thay đổi vào database
+        db.session.commit()
+
+        return DataResponse().success_response(data={"description": check.description, "result": check.result})
+    except Exception as e:
+        raise CustomException(http_code=400, code='400', message=str(e))

@@ -30,6 +30,7 @@ class PatientsItemResponse(PatientsBase):
     weight:int
     date_birth: Optional[datetime]
     deleted: bool
+    # unit_name: str
 
 
 class PatientsCreateRequest(PatientsBase):

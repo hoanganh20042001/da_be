@@ -48,7 +48,7 @@ class ResultService(object):
         if patient is None:
             raise Exception('patient not exists')
         check = db.session.query(Checks).filter(Checks.patient_id == patient.id).order_by(desc(Checks.time)).first()
-        time=0
+        time=1
         if check :
             time=check.time+1
         
@@ -68,7 +68,9 @@ class ResultService(object):
             "--source", temp_file,
             "--project", RESULTS_DIR,
             "--name", os.path.basename(RESULTS_DIR),
-            "--exist-ok"
+            "--exist-ok",
+            # "--conf-thres", "0.3",  # Ngưỡng confidence
+            # "--iou-thres", "0.4" 
         ]
         result = subprocess.run(command, capture_output=True, text=True)
         logger.info(result)

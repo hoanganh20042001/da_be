@@ -31,3 +31,10 @@ class ChecksService(object):
             raise Exception('disease not exists')
         return exist_disease
     
+    @staticmethod
+    def update(check_id):
+        exist_disease = db.session.query(Diseases).join(Checks).filter(Checks.id == check_id).first()
+        if exist_disease is None:
+            raise Exception('disease not exists')
+        return exist_disease
+    

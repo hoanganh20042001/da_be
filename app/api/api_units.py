@@ -3,30 +3,82 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
-
+from sqlalchemy import func
+import math
 from app.helpers.exception_handler import CustomException
 from app.helpers.login_manager import login_required, PermissionRequired
-from app.helpers.paging import Page, PaginationParams, paginate
+from app.helpers.paging import Page, PaginationParams, paginate, MetadataSchema
 from app.schemas.sche_base import DataResponse
 from app.schemas.sche_units import UnitsItemResponse, UnitsCreateRequest,  UnitsUpdateRequest
 from app.services.srv_units import UnitsService
 from app.models import Units
-
+from sqlalchemy.orm import aliased
 logger = logging.getLogger()
 router = APIRouter()
 
 
-@router.get("", dependencies=[Depends(login_required)], response_model=Page[UnitsItemResponse])
+@router.get("", dependencies=[Depends(login_required)], response_model=Any)
 def get(params: PaginationParams = Depends()) -> Any:
     """
     API Get list Units
     """
     try:
-        _query = db.session.query(Units)
+        unit_alias = aliased(Units)
+        unit_father_alias = aliased(Units, name='unit_father')
+
+        # Thực hiện truy vấn Self-Join
+        query = (
+            db.session.query(unit_alias, unit_father_alias)
+            .join(unit_father_alias, unit_alias.unit_father_id == unit_father_alias.id)
+        )
+
+        # Thực hiện lọc nếu có từ khóa tìm kiếm
         if params.search_text:
-            _query = _query.filter(Units.name.ilike(f"%{params.search_text}%"))
-        units = paginate(model=Units, query=_query, params=params)
-        return units
+            query = query.filter(unit_alias.name.ilike(f"%{params.search_text}%"))
+
+    # Tính tổng số bản ghi
+        total = db.session.query(func.count()).select_from(query.subquery()).scalar()
+
+    # Thực hiện phân trang
+        paginated_query = (
+            query.limit(params.page_size).offset(params.page_size * (params.page - 1)))
+    
+    # Lấy dữ liệu phân trang
+        checks = paginated_query.all()
+    
+    # Nếu không có kết quả, ném ra lỗi 404
+        if not checks:
+            logger.error("Check not found")
+            raise HTTPException(status_code=404, detail="Check not found")
+    
+    # Chuẩn bị danh sách kết quả
+        result_list = [
+            {
+                'id': check[0].id,
+                'name': check[0].name,
+                'symbol': check[0].symbol,
+                'unit_father': check[1].name,
+        
+             }
+            for check in checks
+        ]
+    
+    # Tính metadata cho phân trang
+        metadata = MetadataSchema(
+            current_page=params.page,
+            page_size=params.page_size,
+            total_items=total,
+            total_pages=math.ceil(total / params.page_size)
+            )
+    
+    # Trả về kết quả với dữ liệu và metadata
+        response_data = {
+            'data': result_list,
+            'metadata': metadata
+        }
+    
+        return DataResponse().success_response(response_data)
+
     except Exception as e:
         return HTTPException(status_code=400, detail=logger.error(e))
 

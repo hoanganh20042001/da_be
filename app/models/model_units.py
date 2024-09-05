@@ -7,4 +7,5 @@ class Units(BareBaseModel):
     name = Column(String, index=True)
     symbol = Column(String)
     description = Column(String)  
+    unit_father_id=Column(Integer)
    

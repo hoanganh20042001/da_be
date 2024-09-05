@@ -19,3 +19,5 @@ class Patients(BareBaseModel):
     unit_id = Column(Integer)
     rank = Column(String)
     deleted=Column(Boolean, default=False)
+    email = Column(String, index=True)
+    position = Column(String)

@@ -10,3 +10,4 @@ class Checks(BareBaseModel):
     description = Column(String)  
     date= Column(DateTime)
     time=Column(Integer)
+    result=Column(Boolean)

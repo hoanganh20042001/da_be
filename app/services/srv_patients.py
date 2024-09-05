@@ -128,3 +128,11 @@ class PatientsService(object):
         if exist_patient is None:
             raise Exception('patient not exists')
         return exist_patient
+    
+    @staticmethod
+    def getBySearchText(cccd):
+        logger.info(1)
+        exist_patient = db.session.query(Patients).filter(Patients.full_name.ilike(f"%{params.search_text}%")).all()
+        if exist_patient is None:
+            raise Exception('patient not exists')
+        return exist_patient
