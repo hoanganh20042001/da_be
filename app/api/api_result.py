@@ -15,11 +15,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/{cccd}", dependencies=[Depends(login_required)], response_model=DataResponse[PredictionsResponse])
-def detail(cccd: str,file: UploadFile = File(...),
-           current_user: User = Depends(UserService.get_current_user),
+async def detail(cccd: str,file: UploadFile = File(...),
             result_service: ResultService = Depends()) -> Any:
     try:
-        result = result_service.predict(file,cccd,current_user)
+        result =await result_service.predict(file,cccd)
         return DataResponse().success_response(data=result)
     except CustomException as ce:
         logger.error(f"CustomException: {ce}")

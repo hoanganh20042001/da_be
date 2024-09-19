@@ -17,7 +17,7 @@ logger = logging.getLogger()
 router = APIRouter()
 
 
-@router.get("", dependencies=[Depends(login_required)], response_model=Any)
+@router.get("", response_model=Any)
 def get(params: PaginationParams = Depends()) -> Any:
     """
     API Get list Units
@@ -29,7 +29,7 @@ def get(params: PaginationParams = Depends()) -> Any:
         # Thực hiện truy vấn Self-Join
         query = (
             db.session.query(unit_alias, unit_father_alias)
-            .join(unit_father_alias, unit_alias.unit_father_id == unit_father_alias.id)
+            .outerjoin(unit_father_alias, unit_alias.unit_father_id == unit_father_alias.id)
         )
 
         # Thực hiện lọc nếu có từ khóa tìm kiếm
@@ -57,7 +57,7 @@ def get(params: PaginationParams = Depends()) -> Any:
                 'id': check[0].id,
                 'name': check[0].name,
                 'symbol': check[0].symbol,
-                'unit_father': check[1].name,
+                'unit_father': check[1].name if len(check) > 1 and check[1] else None,
         
              }
             for check in checks

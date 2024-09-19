@@ -41,8 +41,8 @@ class UnitsService(object):
 
 
     @staticmethod
-    def update(disease_id: int, data: UnitsUpdateRequest):
-        disease = db.session.query(Units).get(disease_id)
+    def update(unit_id: int, data: UnitsUpdateRequest):
+        disease = db.session.query(Units).get(unit_id)
         if disease is None:
             raise Exception('disease not exists')
         disease.name = disease.name if data.name is None else data.name

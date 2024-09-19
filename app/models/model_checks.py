@@ -11,3 +11,5 @@ class Checks(BareBaseModel):
     date= Column(DateTime)
     time=Column(Integer)
     result=Column(Boolean)
+    image_2=Column(String)
+    status=Column(Boolean, default=False)

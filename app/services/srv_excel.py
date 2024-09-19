@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from openpyxl import load_workbook
 from fastapi.security import HTTPBearer
 from fastapi_sqlalchemy import db
-from app.models.model_patients import Patients
+from app.models import Patients, Units
 from datetime import datetime
 import os
 import logging
@@ -33,11 +33,28 @@ class ExcelService:
      
         with db():
             for _, row in df.iterrows():
-                patient = Patients(full_name=row[1], identification=row[2])
+                logger.info(row[3])
+                unit=db.session.query(Units).filter(Units.name == row[5]).first()
+                date_str = str(row[3]) 
+                patient = Patients(full_name=row[1], 
+                                   identification=row[2], 
+                                   phone_number=row[4],
+                                   date_birth=datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S"),
+                                   sex = 1 if row[6] == 'Nam' else 0,
+                                   resident=row[7],
+                                   home_town=row[8],
+                                   medical_history=row[13],
+                                   rank=row[9],
+                                   weight=row[10],
+                                   height=row[11],
+                                   blood_group=row[12],
+                                   email=row[14],
+                                   position=row[15],
+                                   unit_id=unit.id,
+                                   )
                 db.session.add(patient)
             db.session.commit()
-
-        return {"filename": file.filename, "status": "success"}
+        return file.filename
 
     @staticmethod
     async def export_data_to_excel(template_file: str, output_folder: str):

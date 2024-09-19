@@ -8,6 +8,6 @@ class Prediction(BaseModel):
     accuracy: float
 
 class PredictionsResponse(BaseModel):
-    predictions: List[Prediction]
+    # predictions: List[Prediction]
     detected_image_path: str
     check_id: int

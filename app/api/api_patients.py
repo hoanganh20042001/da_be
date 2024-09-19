@@ -1,9 +1,9 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
-from sqlalchemy import func
+from sqlalchemy import func, or_, and_
 import math
 from app.helpers.exception_handler import CustomException
 from app.helpers.login_manager import login_required, PermissionRequired
@@ -11,19 +11,42 @@ from app.helpers.paging import Page, PaginationParams, paginate, MetadataSchema
 from app.schemas.sche_base import DataResponse
 from app.schemas.sche_patients import PatientsItemResponse, PatientsCreateRequest,  PatientsUpdateRequest
 from app.services.srv_patients import PatientsService
-from app.models import Patients, Units
+from app.models import Patients, Units, Checks
 
 logger = logging.getLogger()
 router = APIRouter()
 
 
-@router.get("", dependencies=[Depends(login_required)],response_model=Any)
-def get(params: PaginationParams = Depends()) -> Any:
+@router.get("",
+            # dependencies=[Depends(login_required)],
+            response_model=Any)
+def get(status: Optional[int]=0,params: PaginationParams = Depends()) -> Any:
     """
     API Get list Patients
     """
     try:
-        _query = db.session.query(Patients, Units).join(Units, Patients.unit_id == Units.id)
+        subquery = (
+        db.session.query(
+            Checks.patient_id,
+            func.max(Checks.time).label('latest_time')
+        )
+        .group_by(Checks.patient_id)
+        .subquery()
+        )
+        _query =( db.session.query(Patients, Units, Checks)
+        .outerjoin(Units, Patients.unit_id == Units.id)
+        .outerjoin(subquery, subquery.c.patient_id == Patients.id)
+        .outerjoin(Checks, and_(Checks.patient_id == Patients.id, Checks.time == subquery.c.latest_time)))
+        
+        if status == 1:
+            _query = _query.filter(Checks.result != None)  # Trường hợp có kết quả
+        elif status == 2:
+            _query = _query.filter(or_(Checks == None, Checks.result == None))  # Không có kiểm tra hoặc chưa có kết quả
+        elif status == 3:
+            _query = _query.filter(and_(Checks != None, Checks.result == False))  # Có bảng Checks và kết quả False (âm tính)
+        elif status == 4:
+            _query = _query.filter(and_(Checks != None, Checks.result == True))
+
         if params.search_text:
             _query = _query.filter(Patients.full_name.ilike(f"%{params.search_text}%"))
         total = db.session.query(func.count()).select_from(_query.subquery()).scalar()
@@ -48,7 +71,25 @@ def get(params: PaginationParams = Depends()) -> Any:
             'date_birth': check[0].date_birth,
             'sex': check[0].sex,
             'phone_number': check[0].phone_number,
-            'unit_name':check[1].name
+            'unit_id':check[0].unit_id,
+            'unit_name':check[1].name,
+            'resident':check[0].resident,
+            'home_town':check[0].home_town,
+            'medical_history':check[0].medical_history,
+            'blood_group':check[0].blood_group,
+            'height':check[0].height,
+            'weight':check[0].weight,
+            'rank':check[0].rank,
+            'email':check[0].email,
+            'position':check[0].position,
+            'image_1':check[2].image_1 if len(check) > 2 and check[2] else None,
+            'image_2':check[2].image_2 if len(check) > 2 and check[2] else None,
+            'check_id':check[2].id if len(check) > 2 and check[2] else None,
+            'description':check[2].description if len(check) > 2 and check[2] else None,
+            'date':check[2].date if len(check) > 2 and check[2] else None,
+            'time':check[2].time if len(check) > 2 and check[2] else None,
+            'result':check[2].result if len(check) > 2 and check[2] else None,
+            'status':check[2].status if len(check) > 2 and check[2] else None,
         }
             for check in checks
         ]
@@ -135,6 +176,7 @@ def getByCccd(cccd: str, patients_service: PatientsService = Depends()) -> Any:
     """
     API get Detail Patients
     """
+    print(cccd)
     try:
         logger.info(cccd)
         return DataResponse().success_response(data=patients_service.getByCccd(cccd))

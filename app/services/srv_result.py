@@ -43,7 +43,7 @@ class ResultService(object):
 
 
     @staticmethod
-    def predict(file: UploadFile,cccd, current_user: User) -> PredictionsResponse:
+    async def predict(file: UploadFile,cccd) -> PredictionsResponse:
         patient = db.session.query(Patients).filter(Patients.identification == cccd).first()
         if patient is None:
             raise Exception('patient not exists')
@@ -82,20 +82,17 @@ class ResultService(object):
         # Tìm đường dẫn của ảnh đã nhận diện
         detected_image_path = None
         logger.info(os.path.basename(temp_file))
-        # for root, dirs, files in os.walk(RESULTS_DIR):
-        #     for file in files:
-        #         if file.endswith((".png", ".jpg", ".jpeg")):
-        #             last_image = sorted(file)[-1]
         detected_image_path = os.path.join('files/detect/detect', os.path.basename(temp_file))
         #             break
         logger.info(detected_image_path)
         new_check = Checks(
-           user_id=current_user.id,
+        #    user_id=current_user.id,
            patient_id=patient.id,
         #    description=data.description,
            time=time,
            date=datetime.now(),
            image_1=temp_file,
+           image_2=detected_image_path.replace("\\", "/"),
         )
         logger.info(f"Ttest {new_check}")
         db.session.add(new_check)
@@ -109,22 +106,35 @@ class ResultService(object):
             data_list = output_lines
             data_list = eval(output_lines)
             logger.info(data_list)
-
-                
-            for line in data_list:
-                predictions.append(Prediction(label=int(line[5]+1), bbox=line[:4], accuracy=line[4]))
-                new_result=Results(
+            print(type(data_list))
+            if type(data_list) == list:
+                disease_id = int(data_list[5]) + 1  # Đảm bảo line[5] là số nguyên
+                accuracy = float(data_list[4])  # Đảm bảo line[4] là số thực hoặc có thể chuyển đổi thành số thực
+                new_result = Results(
                     check_id=new_check.id,
-                    disease_id=int(line[5]+1),
-                    # location=line[:4],
-                    accuracy=line[4],
-                    image=detected_image_path.replace("\\", "/"),
+                    disease_id=disease_id,
+                    accuracy=accuracy,
+                        # image=detected_image_path.replace("\\", "/"),
                 )
+                logger.info(new_result)
                 db.session.add(new_result)
                 db.session.commit()
-        return PredictionsResponse(predictions=predictions, detected_image_path=str(detected_image_path.replace("/", "\\")), check_id= new_check.id)
-            # else:
-            #     return PredictionsResponse(predictions=[], detected_image_path=detected_image_path)
+                    
+            for line in data_list:
+                if isinstance(line, list):
+                    disease_id = int(line[5]) + 1  # Đảm bảo line[5] là số nguyên
+                    accuracy = float(line[4])  # Đảm bảo line[4] là số thực hoặc có thể chuyển đổi thành số thực
+                    new_result = Results(
+                        check_id=new_check.id,
+                        disease_id=disease_id,
+                        accuracy=accuracy,
+                        # image=detected_image_path.replace("\\", "/"),
+                    )
+                    logger.info(new_result)
+                    db.session.add(new_result)
+                    db.session.commit()
+        return PredictionsResponse( detected_image_path=str(detected_image_path.replace("/", "\\")), check_id= new_check.id)
+
 
     @staticmethod
     def get(patient_id):

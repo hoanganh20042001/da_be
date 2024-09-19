@@ -30,7 +30,10 @@ class PatientsItemResponse(PatientsBase):
     weight:int
     date_birth: Optional[datetime]
     deleted: bool
-    # unit_name: str
+    unit_id:int
+    rank:str
+    email:str
+    position:str
 
 
 class PatientsCreateRequest(PatientsBase):
@@ -47,7 +50,10 @@ class PatientsCreateRequest(PatientsBase):
     weight:int
     date_birth: Optional[datetime]
     deleted: bool=False
-
+    unit_it:int
+    rank:str
+    email:str
+    position:str
 
 class PatientsUpdateRequest(BaseModel):
     full_name: str
@@ -63,3 +69,7 @@ class PatientsUpdateRequest(BaseModel):
     weight:int
     date_birth: Optional[datetime]
     deleted: bool=False
+    unit_it:int
+    rank:str
+    email:str
+    position:str
